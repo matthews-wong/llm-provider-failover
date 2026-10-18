@@ -20,4 +20,29 @@ fake provider.
 
 ## Usage
 
-Filled in as the pieces land.
+```python
+from llm_failover.router import FailoverRouter
+from llm_failover.types import Request
+
+router = FailoverRouter([primary, backup])  # anything with .name and .complete()
+print(router.complete(Request("hello")).text)
+```
+
+When every provider fails, `AllProvidersFailed` lists which providers were tried
+with their status and which were skipped because their circuit was open.
+
+## Validate
+
+```
+python3 -m unittest -v
+python3 -m examples.outage
+```
+
+The replay uses scripted providers (fixtures, not real traffic): the primary
+returns 503 on every call and the breaker opens after 3 failures. Last run, 10
+requests: primary called 3 times, backup served all 10.
+
+## Not covered yet
+
+Retries with backoff on the same provider, per-call timeouts, and a real provider
+adapter.
